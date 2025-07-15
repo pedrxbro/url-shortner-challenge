@@ -126,7 +126,7 @@ Acessando no navegador:
 ```
 http://localhost:8080/gApzi6
 ```
-O sistema consulta o banco de dados para encontrar a URL original associada a esse ID, e retorna 302 Found, redirecionando para a URL original.
+O sistema consulta o banco de dados para encontrar a URL original associada a esse ID.
 
 Retorna `302 Found` e redireciona para a URL original.
 
