@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
+import java.util.Date;
 
 @Service
 public class UrlShortnerService {
@@ -17,7 +20,7 @@ public class UrlShortnerService {
     @Autowired
     private UrlShortnerRepository repository;
 
-    public String shortenAndSave(String url) {
+    public String shortenAndSave(String url, String expiration) {
         String id;
         // Evitar IDs duplicados
         do {
@@ -25,25 +28,34 @@ public class UrlShortnerService {
             id = RandomStringUtils.randomAlphanumeric(5,10);
         }
         while (repository.existsById(id));
+
+        Date expirationDate = null;
+
+        if (expiration != null && !"null".equalsIgnoreCase(expiration)) {
+            try {
+                LocalDateTime expirationDateTime = LocalDateTime.parse(expiration);
+                expirationDate = Date.from(
+                        expirationDateTime.atZone(ZoneId.systemDefault()).toInstant()
+                );
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Data de expiração inválida. Use formato ISO-8601.");
+            }
+        }
         //Cria a Entidade URL
-        repository.save(new UrlShortnerEntity(id, url, LocalDateTime.now().plusMinutes(1)));
+        repository.save(new UrlShortnerEntity(id, url, expirationDate));
 
         return id;
     }
 
     public HttpHeaders redirectToUrl(String id) {
+        var urlOpt = repository.findById(id);
 
-        var url = repository.findById(id);
-
-        if(url.isEmpty()){
+        if (urlOpt.isEmpty()) {
             return null;
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(url.get().getFullUrl()));
-
+        headers.setLocation(URI.create(urlOpt.get().getFullUrl()));
         return headers;
-
     }
-
 }

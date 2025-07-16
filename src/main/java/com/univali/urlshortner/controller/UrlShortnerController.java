@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
+@CrossOrigin(origins="http://localhost:5173")
 @RestController
 public class UrlShortnerController {
 
@@ -20,7 +23,8 @@ public class UrlShortnerController {
                                               HttpServletRequest request) {
 
         String url = urlRequestDTO.getUrl();
-        String shortCode = service.shortenAndSave(url);
+        String expiration = urlRequestDTO.getExpiration();
+        String shortCode = service.shortenAndSave(url, expiration);
         // Pega a URL base pela requisição
         String baseUrl = String.format("%s://%s:%d/",
                 request.getScheme(),
